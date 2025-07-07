@@ -1,0 +1,86 @@
+Supplementary material
+
+Holte, James and Lynne Talley, 2009: A new algorithm for finding mixed layer depths with applications to Argo data and Subantarctic Mode Water formation, Journal of Atmospheric and Oceanic Technology.
+
+This set of programs determines the mixed layer depth (MLD) of Argo profiles.  This hybrid method models the general shape of each profile, searches for physical features in the profile, and calculates threshold and gradient MLDs to assemble a suite of possible MLD values.  It then analyzes the patterns in the suite to select a final MLD estimate.
+
+EXPLANATION OF FILES:
+
+	get_mld.m - this routine controls everything.  It loads the data, cycles through all of the Argo profiles, and saves the output. Requires MATLAB SEAWATER toolbox.
+
+        loadargo.m - subroutine called by get_mld.m to load the Argo profiles and perform a few minimal quality control checks.  Requires MATLAB netcdf toolbox.  This subroutine should be edited if you want to use different data formats.  
+
+	findmld.m - subroutine called by get_mld.m to find each profile's MLD.
+
+	mapmld.m - stand-alone routine that generates a map of the MLDs.  Requires MATLAB M_MAP toolbox. 
+
+        argoprofiles - contains demo data files.  get_mld.m retrieves the data from this structure of directories.  Argo profile data is provided in this format from http://www.usgodae.org/argo/argo.html.  See http://www.nodc.noaa.gov/argo/document/datafmt/mono-prof.htm for a description of the format.  
+        
+	mldinfo.mat - output from get_mld.m. 
+
+HOW TO RUN THE DEMO:
+
+     1.  Get the MATLAB toolbox SEAWATER from: http://www.cmar.csiro.au/datacentre/ext_docs/seawater.htm    
+These mld programs need the following routines:  sw_adtg.m  sw_dens.m  sw_dens0.m  sw_pden.m  sw_ptmp.m  sw_seck.m  sw_smow.m
+     
+     2.  Get the MATLAB toolbox M_MAP from: http://www.eos.ubc.ca/~rich/map.html
+This is only needed if you want to make maps of the MLD.                
+
+     3.  Start MATLAB (These mld programs have been tested on MATLAB Version 7.4.0 (R2007a))
+	 	- make sure MATLAB knows the path to the SEAWATER routines, or copy the relevant files into the mld_demo directory  
+  	 	- cd to the mld_demo directory 
+              	- run get_mld.m
+
+HOW TO USE PROGRAMS
+
+     1.  Get the MATLAB toolkit SEAWATER from: http://www.cmar.csiro.au/datacentre/ext_docs/seawater.htm
+         These mld programs need the following routines:
+                   sw_adtg.m  sw_dens.m  sw_dens0.m  sw_pden.m  sw_ptmp.m  sw_seck.m  sw_smow.m
+
+     2.  Get the MATLAB toolkit M_MAP from: http://www.eos.ubc.ca/~rich/map.html
+         This is only needed if you want to make maps of the MLD. 
+
+     3.  Download Argo profile data or arrange your data to mirror the directory structure.        
+     
+     4.  Start MATLAB (These programs have been tested on MATLAB Version 7.4.0 (R2007a) 
+     		- make sure MATLAB knows the path to the SEAWATER routines
+  	 	- cd to the mld_demo directory
+ 		- edit get_mld, in the EDIT section, to tailor your environment 
+              	- run get_mld.m
+
+INPUT
+
+     The subroutine findmld.m calculates the MLD for each profile.  It requires temperature, salinity, and pressure profiles (named 'temp,' 'sal,' and 'pres').  These are input as single-column arrays.  findmld.m also requires an index, 'mldindex,' to arrange the output.   
+
+OUTPUT
+
+    The output is stored sequentially in one large array (mat format).  Each row is the output for an individual profile.  The columns correspond to:
+
+    1 float number
+    2 profile date
+    3 profile latitude
+    4 profile longitude
+    5 = mixedtp;         % mixed layer depth from temperature algorithm
+    6 = mixedt_ta;       % mixed layer average temperature using temperature algorithm mld
+    7 = mixedt_sa;       % mixed layer average salinity using temperature algorithm mld
+    8 = mixedt_da;       % mixed layer average potential density using temperature algorithm mld 
+    9 = mixedsp;         % mixed layer depth from salinity algorithm
+    10 = mixeddp;        % mixed layer depth from density algorithm
+    11 = mixedd_ta;      % mixed layer average temperature using density algorithm mld
+    12 = mixedd_sa;      % mixed layer average salinity using density algorithm mld
+    13 = mixedd_da;      % mixed layer average potential density using density algorithm mld
+    14 = mldepthptmpp;   % mixed layer depth from temperature threshold method
+    15 = mldepthptmp_ta; % mixed layer average temperature using temperature threshold mld
+    16 = mldepthptmp_sa; % mixed layer average salinity using temperature threshold mld
+    17 = mldepthptmp_da; % mixed layer average potential density using temperature threshold mld
+    18 = mldepthdensp;   % mixed layer depth from density threshold method
+    19 = mldepthdens_ta; % mixed layer average temperature using density threshold mld
+    20 = mldepthdens_sa; % mixed layer average salinity using density threshold mld
+    21 = mldepthdens_da; % mixed layer average potential density using density threshold mld
+    22 = gtmldp;         % mixed layer depth from temperature gradient method
+    23 = gdmldp;         % mixed layer depth from density gradient method
+    24 = tanalysis;      % where temperature algorithm selected mld
+    25 = sanalysis;      % where salinity algorithm selected mld
+    26 = danalysis;      % where density algorithm selected mld
+
+
