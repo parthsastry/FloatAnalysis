@@ -107,6 +107,24 @@ def mergeClimatology(
         TIME=salinityClimatology['TIME'].values[0], drop=True
     )
 
+    # Clean bathymetry and mapping masks - no need for TIME variable
+    tempClimatology['BATHYMETRY_MASK'] = \
+        tempClimatology['BATHYMETRY_MASK'].sel(
+        TIME=tempClimatology['TIME'].values[0], drop=True
+    )
+    salinityClimatology['BATHYMETRY_MASK'] = \
+        salinityClimatology['BATHYMETRY_MASK'].sel(
+        TIME=salinityClimatology['TIME'].values[0], drop=True
+    )
+    tempClimatology['MAPPING_MASK'] = \
+        tempClimatology['MAPPING_MASK'].sel(
+        TIME=tempClimatology['TIME'].values[0], drop=True
+    )
+    salinityClimatology['MAPPING_MASK'] = \
+        salinityClimatology['MAPPING_MASK'].sel(
+        TIME=salinityClimatology['TIME'].values[0], drop=True
+    )
+
     # Merge the datasets
     merged_climatology = xr.merge([tempClimatology, salinityClimatology])
 
