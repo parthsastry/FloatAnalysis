@@ -254,6 +254,6 @@ if __name__ == '__main__':
 
     # Save the merged climatology dataset
     climatology.to_netcdf(
-        path + f"subsetClimatology/RG_ArgoClim_Merged_{args.region}.nc",
+        path + f"subsetClimatology/RG_ArgoClim_{args.region}.nc",
         mode='w', format='NETCDF4'
     )

@@ -213,6 +213,7 @@ __marimo__/
 # Ignore Presentations/data/figure folders
 Presentations/
 data/
+src/mld_demo/
 
 # Ignore .vscode folder as well
 .vscode/

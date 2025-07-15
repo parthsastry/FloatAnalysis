@@ -50,6 +50,15 @@ def addPotDensity(
             dataset['ARGO_SALINITY_ANOMALY']
         pres = dataset['PRESSURE']
 
+    # July 9, 2025 Discussion: Refer TEOS-10 documentation and slides
+    # for justification of using sigma_0 instead of other density
+    # conversions.
+    # We're using Conservative Temperature (CT) and Absolute Salinity (SA)
+    # for density calculations
+
+    # An alternate choice could be to use sigma_1, referenced to 1000 dbar,
+    # but we should be fine with sigma_0, which is referenced to 0 dbar.
+
     # Calculate Absolute Salinity
     SA = gsw_xr.SA_from_SP(
         SP=salt,
@@ -59,16 +68,8 @@ def addPotDensity(
     )
     dataset['SA'] = SA
 
-    # Calculate Potential Temperature at 0 dbar
-    PT = gsw_xr.pt0_from_t(
-        SA=SA,
-        t=temp,
-        p=pres
-    )
-    dataset['PT'] = PT
-
     # Calculate Conservative Temperature
-    CT = gsw_xr.CT_from_pt(SA=SA, pt=PT)
+    CT = gsw_xr.CT_from_t(SA=SA, t=temp, p=pres)
     dataset['CT'] = CT
 
     # Calculate Potential Density Anomaly
@@ -108,7 +109,13 @@ if __name__ == "__main__":
     )
 
     # Save the modified dataset to a new NetCDF file
-    output_file = args.input_file.replace('.nc', '_with_density.nc')
+    output_file = args.input_file.replace('.nc', '_densityMapped.nc')
     ds_with_density.to_netcdf(
         output_file, mode='w', format='NETCDF4'
+    )
+
+    # Minimal dataset to store salinity and density
+    minimal_ds = ds_with_density[['SA', 'sigma0']]
+    minimal_ds.to_netcdf(
+        output_file.replace('.nc', '_minimal.nc'), mode='w', format='NETCDF4'
     )
