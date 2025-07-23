@@ -1,5 +1,7 @@
 """
-This script computes the salinity anomaly for each profile
+This script computes the salinity anomaly for each profile after
+removing the profile values within the maximum mixed layer depth
+from the ARGO climatology
 
 This involves a rolling-mean of the monthly climatology and
 interpolating the climatology to the profile locations to compute
@@ -13,10 +15,46 @@ import xarray as xr
 import numpy as np
 
 
+def removeMLD(
+        profile: xr.Dataset,
+        climatologicalMLD: xr.Dataset
+) -> xr.Dataset:
+    """
+    Remove the profile values within the maximum mixed layer depth
+    from the ARGO climatology.
+
+    Parameters:
+        profile (xr.Dataset): The profile dataset.
+        climatologicalMLD (xr.Dataset): The climatological MLD dataset.
+
+    Returns:
+        xr.Dataset: Profile dataset with MLD removed.
+    """
+
+    # Assign coordinates for MLD dataset
+    climatologicalMLD = climatologicalMLD.assign_coords(
+        iLAT=climatologicalMLD['lat'],
+        iLON=climatologicalMLD['lon'],
+        iMONTH=climatologicalMLD['month']
+    )
+
+    # Get the maximum mixed layer depth for each cast
+    maxMLD = climatologicalMLD['mld_da_max'].sel(
+        iLAT=profile['lat'],
+        iLON=profile['lon'],
+        iMONTH=profile['time.month'],
+        method='nearest'
+    )
+
+    # Drop profile depths less than MLD
+    profile = profile.where(profile['z'] >= maxMLD, drop=True)
+
+    return profile
+
+
 def computeAnomalies(
         climatology: xr.Dataset,
         profile: xr.Dataset,
-        MLDclimatology: xr.Dataset
 ) -> xr.Dataset:
     """
     Interpolate the climatology to the profile location and time.
@@ -26,15 +64,14 @@ def computeAnomalies(
 
     Parameters:
         climatology (xr.Dataset): The climatology dataset.
-        profile (xr.Dataset): The profile dataset.
-        MLDclimatology (xr.Dataset): The climatological MLD dataset.
+        profile (xr.Dataset): The profile dataset with the MLD removed.
 
     Returns:
         xr.Dataset: Profile dataset with anomalies
     """
 
     # Interpolate climatology to profile locations
-    profileLocationClimatology = climatology[['SA', 'sigma0 ']].interp(
+    profileLocationClimatology = climatology[['SA', 'sigma0']].interp(
         LATITUDE=('casts', profile['lat'].data),
         LONGITUDE=('casts', (profile['lon'].data + 360) % 360),
         kwargs={'fill_value': None}
@@ -150,8 +187,12 @@ if __name__ == "__main__":
         "../data/ARGO_VortexProfiles/subsetProfiles/"
         "EasternTropicalPacific_densityMapped_minimal.nc"
     )
+    climatologyMLD = xr.open_dataset(
+        "../data/ARGO_MLD/Argo_mixedlayers_monthlyclim_04142022.nc"
+    )
 
-    # Compute anomalies
+    # Remove MLD and compute anomalies
+    profile = removeMLD(profile, climatologyMLD)
     anomalies = computeAnomalies(climatology, profile)
 
     # Save the anomalies to a new NetCDF file
